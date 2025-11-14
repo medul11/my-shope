@@ -1,64 +1,307 @@
+<!-- admin.html -->
 <!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Panel | অ্যাডমিন প্যানেল</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family:"Noto Sans Bengali", sans-serif; margin:0; background:#f5f7fa; color:#222 }
-    .wrap{max-width:900px;margin:28px auto;padding:0 18px}
-    .panel{background:#fff;padding:16px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
-    input,textarea,select{width:100%;padding:8px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px}
-    .btn{background:#1e8449;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
-    .danger{background:#c0392b}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    ul{list-style:none;padding-left:0}
-    li{padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
-    .small{font-size:12px;color:#666}
+    :root {
+      --primary: #1e8449;
+      --primary-light: #27ae60;
+      --primary-dark: #186a3b;
+      --secondary: #3498db;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+      --light: #f5f7fa;
+      --dark: #222;
+      --gray: #666;
+      --white: #fff;
+      --shadow: 0 2px 10px rgba(0,0,0,0.08);
+      --radius: 10px;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: "Noto Sans Bengali", "Segoe UI", sans-serif; 
+      margin:0; 
+      background: var(--light); 
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .wrap{
+      max-width: 900px;
+      width: 100%;
+    }
+    
+    .panel{
+      background: var(--white);
+      padding: 25px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    
+    .top{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .top h2 {
+      margin: 0;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: var(--radius);
+      font-family: inherit;
+      transition: border 0.3s;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    
+    .btn {
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .danger {
+      background: var(--danger);
+    }
+    
+    .danger:hover {
+      background: #c0392b;
+    }
+    
+    .back-link {
+      text-decoration: none;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+    }
+    
+    ul {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: var(--radius);
+    }
+    
+    li {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s;
+    }
+    
+    li:hover {
+      background: #f9f9f9;
+    }
+    
+    li:last-child {
+      border-bottom: none;
+    }
+    
+    .product-info {
+      flex: 1;
+    }
+    
+    .product-info strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    .product-meta {
+      display: flex;
+      gap: 15px;
+      margin-top: 8px;
+    }
+    
+    .product-type {
+      background: #e8f4fd;
+      color: var(--secondary);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .product-price {
+      font-weight: bold;
+      color: var(--primary);
+    }
+    
+    .small {
+      font-size: 12px;
+      color: var(--gray);
+    }
+    
+    .login-icon {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .login-icon i {
+      font-size: 48px;
+      color: var(--primary);
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+      .top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .product-actions {
+        align-self: flex-end;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="panel" id="loginPanel">
-      <div class="top">
-        <h2>🔐 Admin Login / অ্যাডমিন লগইন</h2>
-        <a href="index.html" class="small" style="text-decoration:none;color:#1e8449">Back to Shop / দোকানে ফিরুন</a>
+      <div class="login-icon">
+        <i class="fas fa-lock"></i>
       </div>
-      <input id="password" type="password" placeholder="Enter password / পাসওয়ার্ড দিন" />
-      <button class="btn" onclick="doLogin()">Login / লগইন</button>
-      <p class="small">Admin password is stored only in this file. Change it if you want. / পাসওয়ার্ড এই ফাইলে রাখা আছে — প্রয়োজনে বদলাতে হবে।</p>
+      <div class="top">
+        <h2><i class="fas fa-user-shield"></i> Admin Login / অ্যাডমিন লগইন</h2>
+        <a href="indax.html" class="back-link">
+          <i class="fas fa-arrow-left"></i> Back to Shop / দোকানে ফিরুন
+        </a>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password / পাসওয়ার্ড</label>
+        <input id="password" type="password" placeholder="Enter password / পাসওয়ার্ড দিন" />
+      </div>
+      
+      <button class="btn" onclick="doLogin()">
+        <i class="fas fa-sign-in-alt"></i> Login / লগইন
+      </button>
+      
+      <p class="small" style="margin-top: 15px;">
+        Admin password is stored only in this file. Change it if you want. / পাসওয়ার্ড এই ফাইলে রাখা আছে — প্রয়োজনে বদলাতে হবে।
+      </p>
     </div>
 
-    <div class="panel" id="adminPanel" style="display:none;margin-top:14px">
+    <div class="panel" id="adminPanel" style="display:none;">
       <div class="top">
-        <h2>🛠️ Product Management / প্রোডাক্ট ম্যানেজমেন্ট</h2>
-        <button class="btn" onclick="logout()">Logout / লগআউট</button>
+        <h2><i class="fas fa-tools"></i> Product Management / প্রোডাক্ট ম্যানেজমেন্ট</h2>
+        <button class="btn danger" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout / লগআউট
+        </button>
       </div>
 
       <form id="addForm">
-        <input id="p_name" placeholder="Product name (EN | BN) / প্রোডাক্ট নাম" required />
-        <select id="p_type">
-          <option value="medicine">medicine</option>
-          <option value="supplement">supplement</option>
-          <option value="device">device</option>
-        </select>
-        <input id="p_price" type="number" placeholder="Price / মূল্য" required />
-        <input id="p_img" placeholder="Image URL (optional) / ইমেজ URL (ঐচ্ছিক)" />
-        <textarea id="p_desc" placeholder="Description (EN | BN) / বর্ণনা"></textarea>
-        <button class="btn" type="submit">Add Product / প্রোডাক্ট যোগ করুন</button>
+        <div class="form-group">
+          <label for="p_name">Product Name / প্রোডাক্ট নাম</label>
+          <input id="p_name" placeholder="Product name (EN | BN) / প্রোডাক্ট নাম" required />
+        </div>
+        
+        <div class="form-group">
+          <label for="p_type">Product Type / প্রোডাক্ট ধরন</label>
+          <select id="p_type" required>
+            <option value="medicine">Medicine / মেডিসিন</option>
+            <option value="supplement">Supplement / সাপ্লিমেন্ট</option>
+            <option value="device">Device / ডিভাইস</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="p_price">Price / মূল্য</label>
+          <input id="p_price" type="number" placeholder="Price / মূল্য" required />
+        </div>
+        
+        <div class="form-group">
+          <label for="p_img">Image URL / ইমেজ URL</label>
+          <input id="p_img" placeholder="Image URL (optional) / ইমেজ URL (ঐচ্ছিক)" />
+        </div>
+        
+        <div class="form-group">
+          <label for="p_desc">Description / বর্ণনা</label>
+          <textarea id="p_desc" placeholder="Description (EN | BN) / বর্ণনা" rows="3"></textarea>
+        </div>
+        
+        <button class="btn" type="submit">
+          <i class="fas fa-plus-circle"></i> Add Product / প্রোডাক্ট যোগ করুন
+        </button>
       </form>
 
-      <h3 style="margin-top:14px">Current Products / বর্তমান প্রোডাক্টসমূহ</h3>
+      <h3 style="margin-top: 30px;">
+        <i class="fas fa-list"></i> Current Products / বর্তমান প্রোডাক্টসমূহ
+      </h3>
       <ul id="plist"></ul>
 
-      <p class="small" style="margin-top:12px">Products are saved to browser localStorage on this PC. When you add a product here it will appear on the public index.html automatically (on this PC/browser). / প্রোডাক্টগুলো ব্রাউজারের localStorage-এ সেভ হবে। এখানে যোগ করলে প্রথম পেজে অটোমেটিক দেখা যাবে।</p>
+      <p class="small" style="margin-top: 20px;">
+        Products are saved to browser localStorage on this PC. When you add a product here it will appear on the public index.html automatically (on this PC/browser). / প্রোডাক্টগুলো ব্রাউজারের localStorage-এ সেভ হবে। এখানে যোগ করলে প্রথম পেজে অটোমেটিক দেখা যাবে।
+      </p>
     </div>
   </div>
 
   <script>
-    // PASSWORD - change here if you want. User requested: 11223344
     const ADMIN_PASSWORD = "11223344";
-
     const STORAGE_KEY = "medProducts_v1";
 
     function getProducts(){
@@ -66,7 +309,10 @@
       if(!raw) return [];
       try{ return JSON.parse(raw); }catch(e){ return []; }
     }
-    function saveProducts(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+    
+    function saveProducts(list){ 
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); 
+    }
 
     function doLogin(){
       const p = document.getElementById("password").value;
@@ -78,6 +324,7 @@
         alert("Wrong password / ভুল পাসওয়ার্ড");
       }
     }
+    
     function logout(){
       document.getElementById("password").value = "";
       document.getElementById("loginPanel").style.display = "block";
@@ -91,6 +338,12 @@
       const price = Number(document.getElementById("p_price").value) || 0;
       const img = document.getElementById("p_img").value.trim();
       const desc = document.getElementById("p_desc").value.trim();
+      
+      if (!name || !price) {
+        alert("Please fill in required fields / প্রয়োজনীয় তথ্য দিন");
+        return;
+      }
+      
       const list = getProducts();
       const id = Date.now();
       list.push({ id, name, type, price, img, desc });
@@ -104,12 +357,34 @@
       const list = getProducts();
       const ul = document.getElementById("plist");
       ul.innerHTML = "";
-      if(list.length === 0) ul.innerHTML = "<li class='small'>No products yet / কোনো প্রোডাক্ট নেই</li>";
+      
+      if(list.length === 0) {
+        ul.innerHTML = `
+          <li style="text-align:center; padding:30px; color:var(--gray)">
+            <i class="fas fa-box-open" style="font-size:40px; margin-bottom:10px;"></i>
+            <p>No products yet / কোনো প্রোডাক্ট নেই</p>
+          </li>
+        `;
+        return;
+      }
+      
       list.forEach((p, idx)=>{
         const li = document.createElement("li");
-        li.innerHTML = `<div style="flex:1"><strong>${p.name}</strong><div class="small">${p.desc || ''}</div></div>
-                        <div style="margin-left:12px">৳${p.price}</div>
-                        <div style="margin-left:12px"><button class="btn danger" style="padding:6px 8px" onclick="delProduct(${p.id})">Delete</button></div>`;
+        li.innerHTML = `
+          <div class="product-info">
+            <strong>${p.name}</strong>
+            <div class="small">${p.desc || ''}</div>
+            <div class="product-meta">
+              <span class="product-type">${p.type}</span>
+              <span class="product-price">৳${p.price}</span>
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="btn danger" style="padding:8px 12px" onclick="delProduct(${p.id})">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        `;
         ul.appendChild(li);
       });
     }
@@ -123,7 +398,6 @@
       alert("Deleted / মুছে ফেলা হয়েছে");
     }
 
-    // On load: if localStorage empty, seed with defaults so index shows something
     (function initSeed(){
       const key = STORAGE_KEY;
       if(!localStorage.getItem(key)){
