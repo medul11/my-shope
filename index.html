@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Online Medicine Shop | অনলাইন মেডিসিন শপ</title>
+  <style>
+    body { font-family: "Noto Sans Bengali", sans-serif; margin:0; background:#f5f7fa; color:#222; }
+    header{background:#fff;padding:14px 18px;box-shadow:0 2px 6px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+    header h1{margin:0;font-size:18px;color:#1e8449}
+    .controls{display:flex;gap:8px;align-items:center}
+    .controls input,.controls select{padding:7px 9px;border:1px solid #ccc;border-radius:6px}
+    .btn{background:#1e8449;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+    main{max-width:980px;margin:22px auto;padding:0 18px}
+    .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+    .card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+    .card img{width:100%;height:160px;object-fit:cover;background:#eee}
+    .card .body{padding:10px}
+    .card h3{margin:0 0 6px;font-size:16px}
+    .card p{margin:0 0 8px;color:#555;font-size:13px}
+    .meta{display:flex;justify-content:space-between;align-items:center}
+    .meta .price{font-weight:700}
+    form.order{background:#fff;padding:14px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.06);margin-top:18px}
+    form.order input, form.order textarea, form.order select{width:100%;padding:8px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px}
+    footer{max-width:980px;margin:20px auto;padding:14px 18px;background:#fff;border-radius:8px;text-align:center;color:#555}
+    .small{font-size:12px;color:#666}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💊 Online Medicine Shop | অনলাইন মেডিসিন শপ</h1>
+    <div class="controls">
+      <input id="search" placeholder="Search / সার্চ করুন..." />
+      <select id="filter">
+        <option value="all">All / সব</option>
+        <option value="medicine">Medicine / মেডিসিন</option>
+        <option value="supplement">Supplement / সাপ্লিমেন্ট</option>
+        <option value="device">Device / ডিভাইস</option>
+      </select>
+      <button class="btn" onclick="showCart()">🛒 Cart / কার্ট (<span id="cartCount">0</span>)</button>
+      <a href="admin.html" class="small" style="text-decoration:none;color:#1e8449;margin-left:8px">🔐 Admin Login</a>
+    </div>
+  </header>
+
+  <main>
+    <h2>Products / প্রোডাক্ট সমূহ</h2>
+    <div id="productList" class="products"></div>
+
+    <form id="orderForm" class="order">
+      <h3>Order Now / এখন অর্ডার করুন</h3>
+      <input id="o_name" placeholder="Name / নাম" required />
+      <input id="o_phone" placeholder="Phone / ফোন" required />
+      <textarea id="o_address" placeholder="Address / ঠিকানা" required></textarea>
+      <select id="o_product">
+        <option value="">Select product / প্রোডাক্ট নির্বাচন করুন</option>
+      </select>
+      <select id="o_payment">
+        <option value="cod">Cash on Delivery / ক্যাশ অন ডেলিভারি</option>
+        <option value="bkash">Bkash / বিকাশ</option>
+        <option value="card">Card / কার্ড</option>
+      </select>
+      <button type="submit" class="btn">Submit Order / অর্ডার পাঠান</button>
+      <p class="small">Note: Email sending integration will be added later. For now orders are saved locally in your browser. / ইমেইল পাঠানোর ইন্টিগ্রেশন পরে যোগ করা হবে। আপাতত অর্ডার ব্রাউজারে লোকালি সেভ হবে।</p>
+    </form>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Online Medicine Shop | অনলাইন মেডিসিন শপ
+  </footer>
+
+  <script>
+    // Local storage key
+    const STORAGE_KEY = "medProducts_v1";
+    const ORDER_KEY = "medOrders_v1";
+
+    // Default seed products (if none in localStorage)
+    const seed = [
+      {id:1, name:"Paracetamol 500mg | প্যারাসিটামল", type:"medicine", price:45, desc:"Fever & pain relief | জ্বর ও ব্যথা কমায়", img:"https://images.unsplash.com/photo-1582719478250-0b8a8f7ef83a?auto=format&fit=crop&w=600&q=60"},
+      {id:2, name:"Vitamin C Tablet | ভিটামিন সি ট্যাবলেট", type:"supplement", price:200, desc:"Boosts immunity | রোগ প্রতিরোধ ক্ষমতা বাড়ায়", img:"https://images.unsplash.com/photo-1580281657525-7a8f9a8b8b59?auto=format&fit=crop&w=600&q=60"},
+      {id:3, name:"Glucometer | গ্লুকোমিটার", type:"device", price:2500, desc:"Measures blood sugar | রক্তে শর্করা মাপার যন্ত্র", img:"https://images.unsplash.com/photo-1580281657520-1b8f9a1b9c12?auto=format&fit=crop&w=600&q=60"}
+    ];
+
+    function getProducts(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
+        return seed.slice();
+      }
+      try{ return JSON.parse(raw); }catch(e){ return seed.slice(); }
+    }
+
+    function saveProducts(list){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function renderProducts(){
+      const list = getProducts();
+      const container = document.getElementById("productList");
+      container.innerHTML = "";
+      const q = document.getElementById("search").value.toLowerCase();
+      const f = document.getElementById("filter").value;
+      const sel = document.getElementById("o_product");
+      sel.innerHTML = '<option value="">Select product / প্রোডাক্ট নির্বাচন করুন</option>';
+
+      const filtered = list.filter(p=>{
+        const okFilter = f === "all" || p.type === f;
+        const okQuery = p.name.toLowerCase().includes(q) || (p.desc && p.desc.toLowerCase().includes(q));
+        return okFilter && okQuery;
+      });
+
+      if(filtered.length === 0){
+        container.innerHTML = '<p class="small" style="color:#666">No products found / কোনো প্রোডাক্ট পাওয়া যায়নি</p>';
+        return;
+      }
+
+      filtered.forEach(p=>{
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${p.img || ''}" alt="${p.name}" />
+          <div class="body">
+            <h3>${p.name}</h3>
+            <p>${p.desc || ''}</p>
+            <div class="meta">
+              <div class="price">৳${p.price}</div>
+              <div>
+                <button class="btn" onclick="addToCart(${p.id})">Add / যোগ</button>
+                <button style="margin-left:8px" onclick="viewDetails(${p.id})">Details / বিস্তারিত</button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} — ৳${p.price}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    // CART (simple)
+    let cart = [];
+    function addToCart(id){
+      const prods = getProducts();
+      const p = prods.find(x=>x.id === id);
+      if(!p) return alert("Product not found");
+      const ex = cart.find(i=>i.id===id);
+      if(ex) ex.qty++;
+      else cart.push({id:p.id,name:p.name,price:p.price,qty:1});
+      updateCartCount();
+      alert(p.name + " added to cart / কার্টে যোগ করা হয়েছে");
+    }
+    function updateCartCount(){
+      const count = cart.reduce((s,i)=>s+i.qty,0);
+      document.getElementById("cartCount").textContent = count;
+    }
+    function showCart(){
+      if(cart.length===0) return alert("Cart is empty / কার্ট খালি আছে");
+      let msg = "🛒 Cart / কার্ট:\\n";
+      cart.forEach(i=> msg += `${i.name} — ${i.qty} pcs — ৳${i.price*i.qty}\\n`);
+      msg += "------------------\\nTotal: ৳" + cart.reduce((s,i)=>s+i.price*i.qty,0);
+      alert(msg);
+    }
+
+    function viewDetails(id){
+      const p = getProducts().find(x=>x.id===id);
+      if(!p) return;
+      alert(`${p.name}\\n\\n${p.desc || ''}\\n\\nPrice: ৳${p.price}`);
+    }
+
+    // Order form handling (save to localStorage)
+    document.getElementById("orderForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const name = document.getElementById("o_name").value.trim();
+      const phone = document.getElementById("o_phone").value.trim();
+      const address = document.getElementById("o_address").value.trim();
+      const productId = document.getElementById("o_product").value;
+      if(!productId) return alert("Please select a product / প্রোডাক্ট নির্বাচন করুন");
+      const prods = getProducts();
+      const prod = prods.find(p=>String(p.id) === String(productId));
+      const payment = document.getElementById("o_payment").value;
+
+      const order = {
+        id: Date.now(),
+        name, phone, address,
+        productId: prod.id,
+        productName: prod.name,
+        price: prod.price,
+        payment,
+        createdAt: new Date().toISOString()
+      };
+
+      const ordersRaw = localStorage.getItem(ORDER_KEY);
+      const orders = ordersRaw ? JSON.parse(ordersRaw) : [];
+      orders.push(order);
+      localStorage.setItem(ORDER_KEY, JSON.stringify(orders));
+
+      // reset form & cart
+      document.getElementById("orderForm").reset();
+      cart = [];
+      updateCartCount();
+
+      alert("Order saved locally. Later you can enable email sending. / অর্ডার লোকালি সেভ হয়েছে। পরে ইমেইল সিস্টেম যোগ করা যাবে।");
+    });
+
+    // Search & filter hooks
+    document.getElementById("search").addEventListener("input", renderProducts);
+    document.getElementById("filter").addEventListener("change", renderProducts);
+
+    // init
+    document.getElementById("year").textContent = new Date().getFullYear();
+    renderProducts();
+    updateCartCount();
+  </script>
+</body>
+</html>

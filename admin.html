@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel | অ্যাডমিন প্যানেল</title>
+  <style>
+    body { font-family:"Noto Sans Bengali", sans-serif; margin:0; background:#f5f7fa; color:#222 }
+    .wrap{max-width:900px;margin:28px auto;padding:0 18px}
+    .panel{background:#fff;padding:16px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+    input,textarea,select{width:100%;padding:8px;margin-bottom:8px;border:1px solid #ccc;border-radius:6px}
+    .btn{background:#1e8449;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+    .danger{background:#c0392b}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    ul{list-style:none;padding-left:0}
+    li{padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+    .small{font-size:12px;color:#666}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel" id="loginPanel">
+      <div class="top">
+        <h2>🔐 Admin Login / অ্যাডমিন লগইন</h2>
+        <a href="index.html" class="small" style="text-decoration:none;color:#1e8449">Back to Shop / দোকানে ফিরুন</a>
+      </div>
+      <input id="password" type="password" placeholder="Enter password / পাসওয়ার্ড দিন" />
+      <button class="btn" onclick="doLogin()">Login / লগইন</button>
+      <p class="small">Admin password is stored only in this file. Change it if you want. / পাসওয়ার্ড এই ফাইলে রাখা আছে — প্রয়োজনে বদলাতে হবে।</p>
+    </div>
+
+    <div class="panel" id="adminPanel" style="display:none;margin-top:14px">
+      <div class="top">
+        <h2>🛠️ Product Management / প্রোডাক্ট ম্যানেজমেন্ট</h2>
+        <button class="btn" onclick="logout()">Logout / লগআউট</button>
+      </div>
+
+      <form id="addForm">
+        <input id="p_name" placeholder="Product name (EN | BN) / প্রোডাক্ট নাম" required />
+        <select id="p_type">
+          <option value="medicine">medicine</option>
+          <option value="supplement">supplement</option>
+          <option value="device">device</option>
+        </select>
+        <input id="p_price" type="number" placeholder="Price / মূল্য" required />
+        <input id="p_img" placeholder="Image URL (optional) / ইমেজ URL (ঐচ্ছিক)" />
+        <textarea id="p_desc" placeholder="Description (EN | BN) / বর্ণনা"></textarea>
+        <button class="btn" type="submit">Add Product / প্রোডাক্ট যোগ করুন</button>
+      </form>
+
+      <h3 style="margin-top:14px">Current Products / বর্তমান প্রোডাক্টসমূহ</h3>
+      <ul id="plist"></ul>
+
+      <p class="small" style="margin-top:12px">Products are saved to browser localStorage on this PC. When you add a product here it will appear on the public index.html automatically (on this PC/browser). / প্রোডাক্টগুলো ব্রাউজারের localStorage-এ সেভ হবে। এখানে যোগ করলে প্রথম পেজে অটোমেটিক দেখা যাবে।</p>
+    </div>
+  </div>
+
+  <script>
+    // PASSWORD - change here if you want. User requested: 11223344
+    const ADMIN_PASSWORD = "11223344";
+
+    const STORAGE_KEY = "medProducts_v1";
+
+    function getProducts(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return [];
+      try{ return JSON.parse(raw); }catch(e){ return []; }
+    }
+    function saveProducts(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+    function doLogin(){
+      const p = document.getElementById("password").value;
+      if(p === ADMIN_PASSWORD){
+        document.getElementById("loginPanel").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        renderList();
+      } else {
+        alert("Wrong password / ভুল পাসওয়ার্ড");
+      }
+    }
+    function logout(){
+      document.getElementById("password").value = "";
+      document.getElementById("loginPanel").style.display = "block";
+      document.getElementById("adminPanel").style.display = "none";
+    }
+
+    document.getElementById("addForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const name = document.getElementById("p_name").value.trim();
+      const type = document.getElementById("p_type").value;
+      const price = Number(document.getElementById("p_price").value) || 0;
+      const img = document.getElementById("p_img").value.trim();
+      const desc = document.getElementById("p_desc").value.trim();
+      const list = getProducts();
+      const id = Date.now();
+      list.push({ id, name, type, price, img, desc });
+      saveProducts(list);
+      renderList();
+      this.reset();
+      alert("Product added / প্রোডাক্ট যোগ হয়েছে");
+    });
+
+    function renderList(){
+      const list = getProducts();
+      const ul = document.getElementById("plist");
+      ul.innerHTML = "";
+      if(list.length === 0) ul.innerHTML = "<li class='small'>No products yet / কোনো প্রোডাক্ট নেই</li>";
+      list.forEach((p, idx)=>{
+        const li = document.createElement("li");
+        li.innerHTML = `<div style="flex:1"><strong>${p.name}</strong><div class="small">${p.desc || ''}</div></div>
+                        <div style="margin-left:12px">৳${p.price}</div>
+                        <div style="margin-left:12px"><button class="btn danger" style="padding:6px 8px" onclick="delProduct(${p.id})">Delete</button></div>`;
+        ul.appendChild(li);
+      });
+    }
+
+    function delProduct(id){
+      if(!confirm("Are you sure? Delete product / নিশ্চিত? প্রোডাক্ট মুছে ফেলতে চান?")) return;
+      let list = getProducts();
+      list = list.filter(p=>p.id !== id);
+      saveProducts(list);
+      renderList();
+      alert("Deleted / মুছে ফেলা হয়েছে");
+    }
+
+    // On load: if localStorage empty, seed with defaults so index shows something
+    (function initSeed(){
+      const key = STORAGE_KEY;
+      if(!localStorage.getItem(key)){
+        const seed = [
+          {id:1, name:"Paracetamol 500mg | প্যারাসিটামল", type:"medicine", price:45, desc:"Fever & pain relief | জ্বর ও ব্যথা কমায়", img:"https://images.unsplash.com/photo-1582719478250-0b8a8f7ef83a?auto=format&fit=crop&w=600&q=60"},
+          {id:2, name:"Vitamin C Tablet | ভিটামিন সি ট্যাবলেট", type:"supplement", price:200, desc:"Boosts immunity | রোগ প্রতিরোধ ক্ষমতা বাড়ায়", img:"https://images.unsplash.com/photo-1580281657525-7a8f9a8b8b59?auto=format&fit=crop&w=600&q=60"}
+        ];
+        localStorage.setItem(key, JSON.stringify(seed));
+      }
+    })();
+  </script>
+</body>
+</html>
